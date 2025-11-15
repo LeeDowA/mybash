@@ -66,6 +66,7 @@ export VISUAL=nvim
 alias spico='sudo pico'
 alias snano='sudo nano'
 alias vim='nvim'
+alias e='nano -lmig_HM '
 
 # To have colors for ls and all grep commands such as grep, egrep and zgrep
 export CLICOLOR=1
@@ -192,6 +193,7 @@ alias topcpu="/bin/ps -eo pcpu,pid,user,args | sort -k 1 -r | head -10"
 
 # Search files in the current folder
 alias f="find . | grep "
+alias ff=" find / | grep "
 
 # Count all files (recursively) in the current folder
 alias countfiles="for t in files links directories; do echo \`find . -type \${t:0:1} | wc -l\` \$t; done 2> /dev/null"
@@ -321,6 +323,10 @@ mvg() {
 
 # Create and go to the directory
 mkdirg() {
+	mkdir -p "$1"
+	cd "$1"
+}
+mkg() {
 	mkdir -p "$1"
 	cd "$1"
 }
@@ -629,7 +635,7 @@ fi
 
 export PATH=$PATH:"$HOME/.local/bin:$HOME/.cargo/bin:/var/lib/flatpak/exports/bin:/.local/share/flatpak/exports/bin"
 
-eval "$(starship init bash)"
+#eval "$(starship init bash)"
 eval "$(zoxide init bash)"
 
 if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then

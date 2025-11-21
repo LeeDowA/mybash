@@ -28,8 +28,8 @@ if [[ $iatest -gt 0 ]]; then bind "set bell-style visible"; fi
 
 # Expand the history size
 export HISTFILESIZE=10000
-export HISTSIZE=500
-export HISTTIMEFORMAT="%F %T" # add timestamp to history
+export HISTSIZE=1500
+export HISTTIMEFORMAT="| %F %T >  " # add timestamp to history
 
 # Don't put duplicate lines in the history and do not add lines that start with a space
 export HISTCONTROL=erasedups:ignoredups:ignorespace
@@ -62,11 +62,19 @@ if [[ $iatest -gt 0 ]]; then bind "set show-all-if-ambiguous On"; fi
 
 # Set the default editor
 export EDITOR=nvim
+export EDITOR='nano -lmHnYT_'
 export VISUAL=nvim
 alias spico='sudo pico'
 alias snano='sudo nano'
+alias scn='sudo nano'
+alias scat='sudo nano  -lm@!Eig_HM '
 alias vim='nvim'
 alias e='nano -lmig_HM '
+
+export LANG="en_US.UTF-8"
+export LC_CTYPE="en_US.UTF-8"
+export LC_TIME="en_IL.UTF-8"
+
 
 # To have colors for ls and all grep commands such as grep, egrep and zgrep
 export CLICOLOR=1
@@ -121,7 +129,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 alias ebrc='edit ~/.bashrc'
 
 # Show help for this .bashrc file
-alias hlp='less ~/.bashrc_help'
+alias hlp='less -RX ~/.bashrc_help'
 
 # alias to show the date
 alias da='date "+%Y-%m-%d %A %T %Z"'
@@ -129,11 +137,12 @@ alias da='date "+%Y-%m-%d %A %T %Z"'
 # Alias's to modified commands
 alias cp='cp -i'
 alias mv='mv -i'
-alias rm='trash -v'
+alias rrm='trash -v'
 alias mkdir='mkdir -p'
+alias mk='mkdir -p'
 alias ps='ps auxf'
 alias ping='ping -c 10'
-alias less='less -R'
+alias less='less -RX'
 alias cls='clear'
 alias apt-get='sudo apt-get'
 alias multitail='multitail --no-repeat -c'
@@ -194,6 +203,7 @@ alias topcpu="/bin/ps -eo pcpu,pid,user,args | sort -k 1 -r | head -10"
 # Search files in the current folder
 alias f="find . | grep "
 alias ff=" find / | grep "
+alias ffl=" find / -ls 2>/dev/null | grep "
 
 # Count all files (recursively) in the current folder
 alias countfiles="for t in files links directories; do echo \`find . -type \${t:0:1} | wc -l\` \$t; done 2> /dev/null"
@@ -229,6 +239,10 @@ alias logs="sudo find /var/log -type f -exec file {} \; | grep 'text' | cut -d' 
 
 # SHA1
 alias sha1='openssl sha1'
+alias xg='xdg-open '
+alias xo='xdg-open '
+alias sf='setfont ter-v24b'
+alias sg='setfont '
 
 alias clickpaste='sleep 3; xdotool type "$(xclip -o -selection clipboard)"'
 
@@ -633,16 +647,25 @@ if [[ $- == *i* ]]; then
     bind '"\C-f":"zi\n"'
 fi
 
+alias xo="xdg-open "
+alias cr="cat "
+alias sfv="setfont ter-v22b"
+
+
 export PATH=$PATH:"$HOME/.local/bin:$HOME/.cargo/bin:/var/lib/flatpak/exports/bin:/.local/share/flatpak/exports/bin"
 
-#eval "$(starship init bash)"
 eval "$(zoxide init bash)"
+eval "$(starship init bash)"
+
+[[ -f ~/fancyprp ]] && . ~/fancyprp
+
 
 if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
 
 exec startx
 
 fi
+
 
 
 

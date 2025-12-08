@@ -1,5 +1,215 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL='ignoredups;ignoreboth'
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=19000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='grep -E --color=auto'
+fi
+
+# colored GCC warnings and errors
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias ping='ping -c3'
+alias scn='sudo nano -lmuHAZaLcPg '
+alias n=' nano -lmHuAZi$KPcWgy '
+alias nan='nano -lmHAZuiKPcgyb '
+alias na='nano -lmHubPZcybaA '
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+## --- Elapsed Time in Prompt ---
+
+# 1. Define variables to store the start time and elapsed time
+# SECONDS is a built-in bash variable that counts seconds since the shell started.
+###export LAST_CMD_DURATION=0
+###export TIMER_START=0
+# ==========================================================
+# 🐧 Advanced Prompt and History Management (Revised)
+# ==========================================================# ==========================================================
+# 🥇 FINAL FIX: Conditional Timer Start
+# ==========================================================
+
+# 1. New Timer Start Trap (REPLACE THE OLD timer_start FUNCTION)
+function conditional_timer_start() {
+    # Reset formatting
+    echo -ne "${none}" 
+##    bash_prompt_command
+
+    # Check if the command is *NOT* part of the prompt management system.
+    # We must explicitly exclude the PROMPT_COMMAND function (render_prompt)
+    # and the history commands that often trigger traps.
+    local CMD="$BASH_COMMAND"
+
+    if [[ -n "$CMD" && "$CMD" != "render_prompt" && "$CMD" != "history -a" && "$CMD" != "history -n" ]]; then
+        __CMD_START=$SECONDS
+    fi
+}
+trap 'conditional_timer_start' DEBUG
+
+  TB_GLB= #;= $TITLEBAR
+  PU_GLB= #;=${PROMT_USER}
+  Sp1_GLB= #;=${SEPARATOR_1}
+  PH_GLB= #;=${PROMT_HOST}
+  Sp2_GLB= #;=${SEPARATOR_2}
+  Sp3_GLB= #;=${SEPARATOR_3}
+  PI_= 	 #; PROMT_INPUT
+
+
+# 2. Calculation and Rendering Function (NO CHANGE NEEDED HERE)
+# The logic inside render_prompt remains the same as the last successful version.
+# It handles calculation, formatting, and dynamic PS1 assignment.
+function render_prompt() {
+    local END_TIME=$SECONDS
+    local D=0
+#    bash_prompt_command
+##echo "${NEW_PWD}   rnder " $TB_GLB
+    # --- A. Calculate Duration ---
+    if (( __CMD_START > 0 )); then
+        D=$((END_TIME - __CMD_START))
+    fi
+    
+    # --- B. Reset State ---
+    __CMD_START=0
+
+    # --- C. Format Duration ---
+    # We keep the D > 1 check to prevent clutter, but you can remove it for debugging.
+    if (( D > 1 )); then
+        # Formatting logic (M:SS)
+        # ... (Your existing formatting logic) ...
+        if (( D >= 60 )); then
+            local M=$((D / 60))
+            local S=$((D % 60))
+            LAST_CMD_DURATION_FMT="(\[\e[31m\]${M}m$(printf '%02d' $S)s\[\e[m\])"
+        else
+            LAST_CMD_DURATION_FMT="(\[\e[31m\]${D}s\[\e[m\])"
+        fi
+    else
+        LAST_CMD_DURATION_FMT="" 
+    fi
+
+    # --- D. Dynamic PS1 Rendering ---
+#     FINAL_PS1="$TITLEBAR\n${PROMT_USER}${SEPARATOR_1}${PROMT_HOST}${SEPARATOR_2}$(date +%H:%M)${SEPARATOR_3}\
+     FINAL_PS1="${TB_GLB}\n${PU_GLB}${Sp1_GLB}${PH_GLB}${Sp2_GLB}$(date +%H:%M)${Sp3_GLB}\
+\n took$PI_(\[\e[35m\]${LAST_CMD_DURATION_FMT}\[\e[m\]) $Sp2_GLB${PP_}$Sp3_GLB\[\e[m\] \$ "
+    
+    PS1="$FINAL_PS1"
+
+    # --- E. History Sync ---
+    history -a
+    history -n
+}
+
+# 3. PROMPT_COMMAND Setup (NO CHANGE NEEDED HERE)
+export PROMPT_COMMAND="render_prompt"
+
+
+
 source /etc/profile
-export PATH=$PATH:~/.local/bin
+#[[ -n $PATH ]] && export PATH=$PATH:~/.local/bin
 
 #!/bin/sh
 
@@ -151,6 +361,7 @@ bash_prompt() {
 	## These can be used in the configuration below                           ##
 	############################################################################
 	
+echo "PROk ot $NEW_PWD"
 	## FONT EFFECT
 	local      NONE='0'
 	local      BOLD='1'
@@ -225,8 +436,8 @@ bash_prompt() {
 	local BACKGROUND_2=$L_BLUE
 	local TEXTEFFECT_2=$BOLD
 	
-	local FONT_COLOR_3=$D_GRAY
-	local BACKGROUND_3=$WHITE
+	local FONT_COLOR_3=$INVERT #D_GRAY
+	local BACKGROUND_3=$CYAN #WHITE
 	local TEXTEFFECT_3=$BOLD
 	
 	local PROMT_FORMAT=$BLUE_BOLD
@@ -241,7 +452,8 @@ bash_prompt() {
 	if [ "$HOSTNAME" = dell ]; then
 		FONT_COLOR_1=$WHITE; BACKGROUND_1=$BLUE; TEXTEFFECT_1=$BOLD
 		FONT_COLOR_2=$WHITE; BACKGROUND_2=$L_BLUE; TEXTEFFECT_2=$BOLD	
-		FONT_COLOR_3=$D_GRAY; BACKGROUND_3=$WHITE; TEXTEFFECT_3=$BOLD	
+		FONT_COLOR_3=$ORANGE_BOLD; BACKGROUND_3=$WHITE; TEXTEFFECT_3=$BOLD	
+		#FONT_COLOR_3=$D_GRAY; BACKGROUND_3=$WHITE; TEXTEFFECT_3=$BOLD	
 		PROMT_FORMAT=$CYAN_BOLD
 	fi
 	
@@ -278,7 +490,8 @@ bash_prompt() {
 	## CONFIGURATION: GRAY-CYAN
 	if [ "$HOSTNAME" = light ]; then
 		FONT_COLOR_1=$WHITE; BACKGROUND_1=$BLACK; TEXTEFFECT_1=$BOLD
-		FONT_COLOR_2=$WHITE; BACKGROUND_2=$D_GRAY; TEXTEFFECT_2=$BOLD
+		#FONT_COLOR_2=$WHITE; BACKGROUND_2=$D_GRAY; TEXTEFFECT_2=$BOLD
+		FONT_COLOR_2=$RED; BACKGROUND_2=$D_GRAY; TEXTEFFECT_2=$BOLD
 		FONT_COLOR_3=$BLACK; BACKGROUND_3=$L_CYAN; TEXTEFFECT_3=$BOLD
 		PROMT_FORMAT=$CYAN_BOLD
 	fi
@@ -385,52 +598,26 @@ bash_prompt() {
 	## BASH PROMT                                                             ##
 	## Generate promt and remove format from the rest                         ##
 	############################################################################
-	PS1="$TITLEBAR\n${PROMT_USER}${SEPARATOR_1}${PROMT_HOST}${SEPARATOR_2}${PROMT_PWD}${SEPARATOR_3}${PROMT_INPUT} > $(if [[ $LAST_CMD_DURATION -gt 1 ]]; then echo "(\[\e[31m\]${LAST_CMD_DURATION_FMT}\[\e[m\])"; fi)\n\$ "
+   TB_GLB=$TITLEBAR
+  PU_GLB=${PROMT_USER}
+  Sp1_GLB=${SEPARATOR_1}
+  PH_GLB=${PROMT_HOST}
+  Sp2_GLB=${SEPARATOR_2}
+  Sp3_GLB=${SEPARATOR_3}
+  PI_=${PROMT_INPUT}
+  PP_=${PROMT_PWD}
 
-	
+##  PS1="$TITLEBAR\n${PROMT_USER}${SEPARATOR_1}${PROMT_HOST}${SEPARATOR_2}$(date +%H:%M)${SEPARATOR_1}${PROMT_PWD}${SEPARATOR_3}${PROMPT_INPUT}  \n took (\[\e[35m\]${SEPARATOR_2}$LAST_CMD_DURATION_FMT\[\e[m\])> ${PROMT_INPUT}\$> "
+#       PS1='\[\e[32m\]\u@\h\[\e[m\]:\w $(if [[ $LAST_CMD_DURATION -gt 1 ]]; then echo "(\[\e[31m\]${LAST_CMD_>'
+##       PS1="$PS1 $(if [[ $LAST_CMD_DURATION -gt 0 ]]; then echo  '(\[\e[31m\]b $(LAST_CMD_DURATION_FMT)\[\e[m\])'; fi)\n\$"
 
+###echo $TITLEBAR
+###  PS1="$TITLEBAR\n${PROMT_USER}${SEPARATOR_1}${PROMT_HOST}${SEPARATOR_2}$(date +%H:%M)$FINAL_PS1"	
+###echo $FINAL_PS1
 	## For terminal line coloring, leaving the rest standard
 	none="$(tput sgr0)"
-	trap 'echo -ne "${none}"' DEBUG
+#	trap 'echo -ne "${none}"' DEBUG
 }
-
-## --- Elapsed Time in Prompt ---
-
-# 1. Define variables to store the start time and elapsed time
-# SECONDS is a built-in bash variable that counts seconds since the shell started.
-export LAST_CMD_DURATION=0
-export TIMER_START=0
-
-# 2. Function to start the timer (called before every simple command)
-# The DEBUG trap is triggered before every command execution.
-function set_cmd_start() {
-    # Set TIMER_START to the current SECONDS value
-    TIMER_START=$SECONDS
-}
-trap 'set_cmd_start' DEBUG
-
-# 3. Function to stop the timer and format the duration (called before every prompt)
-# PROMPT_COMMAND is run just before displaying the prompt (PS1).
-function calculate_duration() {
-    # Calculate the difference and save it to LAST_CMD_DURATION
-    LAST_CMD_DURATION=$((SECONDS - TIMER_START))
-    
-    # Format the time for display (e.g., 65 seconds to 1m05s)
-    local D=$LAST_CMD_DURATION
-    if (( D >= 60 )); then
-        local M=$((D / 60))
-        local S=$((D % 60))
-        # Use printf to ensure seconds always has two digits
-        LAST_CMD_DURATION_FMT="${M}m$(printf '%02d' $S)s"
-    else
-        LAST_CMD_DURATION_FMT="${D}s"
-    fi
-}
-
-# 4. Add the calculation function to PROMPT_COMMAND
-# The PROMPT_COMMAND is a string of commands to execute before the prompt is displayed.
-# We ensure existing commands are preserved (if PROMPT_COMMAND is not empty).
-PROMPT_COMMAND="calculate_duration${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 
 
 
@@ -443,14 +630,21 @@ PROMPT_COMMAND="calculate_duration${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 ##	The contents of this variable are executed as a regular Bash command 
 ##	just before Bash displays a prompt. 
 ##	We want it to call our own command to truncate PWD and store it in NEW_PWD
-PROMPT_COMMAND=bash_prompt_command
+####PROMPT_COMMAND=bash_prompt_command
+### PROMPT_COMMAND="calculate_duration;bash_prompt_command${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+
+## For multi terminal sessions
+#PROMPT_COMMAND="calculate_duration; history -a;history -n; bash_prompt_command${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 
 ##	Call bash_promnt only once, then unset it (not needed any more)
 ##	It will set $PS1 with colors and relative to $NEW_PWD, 
 ##	which gets updated by $PROMT_COMMAND on behalf of the terminal
+bash_prompt_command
 bash_prompt
 unset bash_prompt
 
-
+export GREP_COLORS="sl=4;34;47:ms=5;32;107:cx=32;5;42:mc=01;33:ne:se=35:ln=04;37:bn=32"
+##export PROMPT_COMMAND="bash_prompt_command; calculate_duration"
+##export PROMPT_COMMAND="calculate_duration; bash_prompt_command"
 
 ### EOF ###
